@@ -1,0 +1,21 @@
+# ============================================================================
+# PTv3 Gaussian Refiner — Inference Configuration
+# ============================================================================
+
+paths:
+  input_dir: "/mnt/e/UNICA/test_results/ghostlady/AR/FVD/posmap/"
+  output_dir: "/mnt/e/UNICA/test_results/opensource/ghostlady/AR"
+  attribute_map_path: "/mnt/d/zjh/dataset/ghostlady/base_attrmap.npy"
+  checkpoint: "/mnt/d/zjh/weights/ghostlady/fat_3dgs.pth"
+
+processing:
+  target_resolution: 1024
+  aabb_min: -0.5
+  aabb_max: 0.5
+  save_input: false
+  device: "cuda"
+  quiet: false
+
+single_file:
+  input: null
+  output: null

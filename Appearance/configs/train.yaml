@@ -1,0 +1,36 @@
+# ============================================================================
+# PTv3 Gaussian Refiner — Training Configuration
+# ============================================================================
+
+data:
+  posmap_root: "/media/test/sdb1/zjh_workspace/ADNAS/Dataset/survival/posmap_3dgs"
+  attribute_map_path: "/media/test/sdb1/zjh_workspace/ADNAS/Dataset/survival/base_attrmap.npy"
+  renders_root: "/media/test/sdc1/zjh_workspace/ADNAS/Dataset/survival/renders"
+  output_dir: "/media/test/sdc1/zjh_workspace/ADNAS/weights/survival/FAT_3dgs"
+
+training:
+  epochs: 100
+  batch_size: 1          # Per GPU
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  num_views: 8
+  num_workers: 4
+  seed: 42
+  mixed_precision: "no"  # "no" | "fp16" | "bf16"
+  resume: null            # Path to checkpoint, or null
+
+loss:
+  lambda_l1: 0.8
+  lambda_ssim: 0.2
+  lambda_lpips: 0.1
+  focal:
+    enabled: false
+    alpha_scale: 10.0
+    gamma: 2.0
+    alpha_min: 1.0
+    alpha_max: 3.0
+
+rendering:
+  white_background: false
+  random_background: true
+  target_resolution: 1024
