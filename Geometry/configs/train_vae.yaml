@@ -1,0 +1,25 @@
+# VAE Fine-tuning Configuration
+
+# Data
+data_dir: /media/test/sdc1/zjh_workspace/ADNAS/Dataset/ghostlady/posmap_reorg
+pretrained_vae_path: /media/test/sdb1/zjh_workspace/pretrained_models/stable-diffusion-v1-5/vae
+image_size: 128
+
+# Training
+batch_size: 4
+learning_rate: 1.0e-4
+num_steps: 300000
+num_workers: 4
+device: cuda
+
+# Loss
+l1_weight: 1.0
+kl_weight: 1e-6
+
+# Checkpoint & Logging
+checkpoint_dir: /media/test/sdc1/zjh_workspace/ADNAS/weights/ghostlady/geometry_vae/checkpoints
+log_dir: /media/test/sdc1/zjh_workspace/ADNAS/weights/ghostlady/geometry_vae/logs
+resume_from: null
+visualize_every: 10000
+checkpoint_every: 10000
+log_every: 100

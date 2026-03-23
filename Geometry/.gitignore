@@ -1,0 +1,13 @@
+pretrained_models/
+example_data/
+results/
+*.zip
+.vscode/
+.hypothesis/
+__pycache__/
+
+*.png
+logs/
+test_results/
+*.pt
+*.pth

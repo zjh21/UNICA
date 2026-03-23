@@ -1,0 +1,58 @@
+# UNICA Diffusion Model Training Configuration
+
+# Data
+data_folder: /media/test/sdc1/zjh_workspace/ADNAS/Dataset/ghostlady/posmap_reorg
+image_size: 128
+batch_size: 4
+num_workers: 16
+
+# Model Paths
+pretrained_model_path: /media/test/sdb1/zjh_workspace/pretrained_models/stable-diffusion-v1-5
+vae_model_path: /media/test/sdb1/zjh_workspace/pretrained_models/stable-diffusion-v1-5/vae
+vae_finetune_path: /media/test/sdc1/zjh_workspace/ADNAS/weights/ghostlady/geometry_vae/checkpoint_step_340000.pt
+motion_module_path: pretrained_models/motion_module.pth
+
+# Two-stage Training
+stage1_steps: 100000   # Stage 1: Train UNet + motion embeddings
+stage2_steps: 200000   # Stage 2: Freeze embeddings, oversample in-between frames
+num_actions: 5          # Number of discrete motion types
+
+# Training
+learning_rate: 5.0e-5
+seed: 42
+
+# Memory Optimization
+mixed_precision: "no"    # "no", "fp16", or "bf16"
+gradient_accumulation_steps: 1
+gradient_checkpointing: true
+enable_xformers_memory_efficient_attention: true
+use_8bit_adam: false
+scale_lr: false
+
+# Loss
+snr_gamma: 5.0
+noise_offset: 0.1
+uncond_ratio: 0.1
+clean_cond_prob: 0.3
+
+# Optimizer
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_weight_decay: 1.0e-2
+adam_epsilon: 1.0e-8
+
+# LR Scheduler
+lr_scheduler: constant_with_warmup
+lr_warmup_steps: 500
+
+# Gradient
+max_grad_norm: 1.0
+
+# Checkpointing
+checkpointing_steps: 10000
+validation_steps: 10000
+num_keep_checkpoints: 5
+resume_from_checkpoint: null   # "latest", a specific path, or null
+
+# Output
+output_dir: /media/test/sdc1/zjh_workspace/ADNAS/weights/ghostlady/diffusion
