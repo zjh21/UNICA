@@ -8,6 +8,7 @@ from torch.utils.data import Dataset
 import torch
 import cv2
 import random
+import pdb
 
 # ==================== Dataset Implementation ====================
 class GeoActionDataset(Dataset):
@@ -25,7 +26,8 @@ class GeoActionDataset(Dataset):
         # Get all subfolders and sort them by name
         subfolders = sorted([f for f in os.listdir(root_folder) 
                            if os.path.isdir(os.path.join(root_folder, f))])
-        
+        # pdb.set_trace()
+
         # Parse folder names to extract sequence and frame number
         # Format: {sequence_name}_{frame_number}_{action_type}
         sequence_data = {}  # {sequence_name: [(frame_num, action_type, folder_path, subfolder_name)]}

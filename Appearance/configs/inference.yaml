@@ -1,12 +1,13 @@
 # ============================================================================
 # PTv3 Gaussian Refiner — Inference Configuration
 # ============================================================================
+caseName: survival
 
 paths:
-  input_dir: "/mnt/e/UNICA/test_results/ghostlady/AR/FVD/posmap/"
-  output_dir: "/mnt/e/UNICA/test_results/opensource/ghostlady/AR"
-  attribute_map_path: "/mnt/d/zjh/dataset/ghostlady/base_attrmap.npy"
-  checkpoint: "/mnt/d/zjh/weights/ghostlady/fat_3dgs.pth"
+  input_dir: results/${caseName}/0-w_00001_Idle
+  output_dir: results/${caseName}/3dgs
+  attribute_map_path: weights/${caseName}/base_attrmap.npy
+  checkpoint: weights/${caseName}/ptv3.pth
 
 processing:
   target_resolution: 1024

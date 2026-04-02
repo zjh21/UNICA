@@ -170,9 +170,9 @@ def main():
     # =========================================================================
     # Configuration
     # =========================================================================
-    POSITION_MESHES_BASE_FOLDER = r"/mnt/d/zjh/dataset/arashic/meshes"
-    REFERENCE_MESH_PATH = r"/mnt/d/zjh/dataset/arashic/A-POSE.obj"
-    OUTPUT_BASE_FOLDER = r"/mnt/d/zjh/dataset/arashic/posmap"
+    POSITION_MESHES_BASE_FOLDER = r"/media/test/sdc1/zjh_workspace/ADNAS/Dataset/berserker_s1/meshes"
+    REFERENCE_MESH_PATH = r"/media/test/sdc1/zjh_workspace/ADNAS/Dataset/berserker_s1/A-pose.obj"
+    OUTPUT_BASE_FOLDER = r"/media/test/sdc1/zjh_workspace/ADNAS/Dataset/berserker_s1/posmap_debug"
 
     # Set LABEL_ROOT to enable reorganized output structure.
     # When set, output folders are: {OUTPUT_BASE_FOLDER}/{case}_{id:05d}_{motion}/
@@ -182,8 +182,8 @@ def main():
     # Rendering parameters
     RENDER_SIZE = 96  # Size of each rendered view
     FINAL_SIZE = 128  # Size of the final concatenated position map
-    Y_KEYPOINT = 47  # Y coordinate for root keypoint calculation
-    X_RANGES = [(0, 96)]  # X coordinate ranges for root calculation (inclusive)
+    Y_KEYPOINT = 38  # Y coordinate for root keypoint calculation
+    X_RANGES = [(18, 30), (65, 78)]  # X coordinate ranges for root calculation (inclusive)
     GROUP_SIZE = 4  # Number of consecutive frames per group
 
     # Camera magnification

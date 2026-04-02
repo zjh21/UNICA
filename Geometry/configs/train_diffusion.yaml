@@ -1,16 +1,15 @@
 # UNICA Diffusion Model Training Configuration
 
 # Data
-data_folder: /media/test/sdc1/zjh_workspace/ADNAS/Dataset/ghostlady/posmap_reorg
+data_folder: Dataset/ghostlady/posmap
 image_size: 128
 batch_size: 4
 num_workers: 16
 
 # Model Paths
-pretrained_model_path: /media/test/sdb1/zjh_workspace/pretrained_models/stable-diffusion-v1-5
-vae_model_path: /media/test/sdb1/zjh_workspace/pretrained_models/stable-diffusion-v1-5/vae
-vae_finetune_path: /media/test/sdc1/zjh_workspace/ADNAS/weights/ghostlady/geometry_vae/checkpoint_step_340000.pt
-motion_module_path: pretrained_models/motion_module.pth
+pretrained_model_path: pretrained_models/stable-diffusion-v1-5
+vae_model_path: pretrained_models/stable-diffusion-v1-5/vae
+vae_finetune_path: weights/ghostlady/geometry_vae/checkpoint_step_340000.pt
 
 # Two-stage Training
 stage1_steps: 100000   # Stage 1: Train UNet + motion embeddings
@@ -55,4 +54,4 @@ num_keep_checkpoints: 5
 resume_from_checkpoint: null   # "latest", a specific path, or null
 
 # Output
-output_dir: /media/test/sdc1/zjh_workspace/ADNAS/weights/ghostlady/diffusion
+output_dir: weights/ghostlady/diffusion

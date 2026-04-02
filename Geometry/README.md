@@ -1,261 +1,163 @@
-<h1 align='Center'>Champ: Controllable and Consistent Human Image Animation with 3D Parametric Guidance</h1>
+# UNICA: A Unified Neural Framework for Controllable 3D Avatars [Geometry Part]
 
-<div align='Center'>
-    <a href='https://github.com/ShenhaoZhu' target='_blank'>Shenhao Zhu</a><sup>*1</sup>&emsp;
-    <a href='https://github.com/Leoooo333' target='_blank'>Junming Leo Chen</a><sup>*2</sup>&emsp;
-    <a href='https://github.com/daizuozhuo' target='_blank'>Zuozhuo Dai</a><sup>3</sup>&emsp;
-    <a href='https://ai3.fudan.edu.cn/info/1088/1266.htm' target='_blank'>Yinghui Xu</a><sup>2</sup>&emsp;
-    <a href='https://cite.nju.edu.cn/People/Faculty/20190621/i5054.html' target='_blank'>Xun Cao</a><sup>1</sup>&emsp;
-    <a href='https://yoyo000.github.io/' target='_blank'>Yao Yao</a><sup>1</sup>&emsp;
-    <a href='http://zhuhao.cc/home/' target='_blank'>Hao Zhu</a><sup>+1</sup>&emsp;
-    <a href='https://sites.google.com/site/zhusiyucs/home' target='_blank'>Siyu Zhu</a><sup>+2</sup>
-</div>
-<div align='Center'>
-    <sup>1</sup>Nanjing University <sup>2</sup>Fudan University <sup>3</sup>Alibaba Group
-</div>
-<div align='Center'>
-<i><strong><a href='https://eccv2024.ecva.net' target='_blank'>ECCV 2024</a></strong></i>
-</div>
+![Pipeline](assets/pipeline.png)
+The Geometry stage generates sequences of **position maps** for animated avatars using a **latent diffusion model**. Given three initial position-map frames and a sequence of discrete motion commands (*Idle*, *Forward*, *Backward*, *Left*, *Right*), the model auto-regressively produces new position maps at each time step.
+The generated position maps can be converted to 3D meshes for quick visualization, or passed to the [Appearance](../Appearance/README.md) stage for texture generation.
 
+<br><br>
 
-<div align='Center'>
-    <a href='https://fudan-generative-vision.github.io/champ/#/'><img src='https://img.shields.io/badge/Project-Page-Green'></a>
-    <a href='https://arxiv.org/abs/2403.14781'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
-    <a href='https://youtu.be/2XVsy9tQRAY'><img src='https://badges.aleen42.com/src/youtube.svg'></a>
-    <a href='assets/wechat.jpeg'><img src='https://badges.aleen42.com/src/wechat.svg'></a>
-</div>
-
-https://github.com/fudan-generative-vision/champ/assets/82803297/b4571be6-dfb0-4926-8440-3db229ebd4aa
-
-# Framework
-
-![framework](assets/framework.jpg)
-
-# News
-
-- **`2024/05/05`**:  🎉🎉🎉[Sample training data on HuggingFace](https://huggingface.co/datasets/fudan-generative-ai/champ_trainning_sample) released.
-- **`2024/05/02`**:  🌟🌟🌟Training source code released [#99](https://github.com/fudan-generative-vision/champ/pull/99).
-- **`2024/04/28`**:  👏👏👏Smooth SMPLs in Blender method released [#96](https://github.com/fudan-generative-vision/champ/pull/96).
-- **`2024/04/26`**:  🚁Great Blender Adds-on [CEB Studios
-](https://www.patreon.com/cebstudios/posts) for various SMPL process!
-- **`2024/04/12`**: ✨✨✨SMPL & Rendering scripts released! Champ your dance videos now💃🤸‍♂️🕺. See [docs](https://github.com/fudan-generative-vision/champ/blob/master/docs/data_process.md).
-  
-- **`2024/03/30`**: 🚀🚀🚀Amazing [ComfyUI Wrapper](https://github.com/kijai/ComfyUI-champWrapper) by community. Here is the [video tutorial](https://www.youtube.com/watch?app=desktop&v=cbElsTBv2-A). Thanks to [@kijai](https://github.com/kijai)🥳
-  
-- **`2024/03/27`**: Cool Demo on [replicate](https://replicate.com/camenduru/champ)🌟. Thanks to [@camenduru](https://github.com/camenduru)👏
-
-- **`2024/03/27`**: Visit our [roadmap🕒](#roadmap) to preview the future of Champ.
-
-# Installation
-
-- System requirement: Ubuntu20.04/Windows 11, Cuda 12.1
-- Tested GPUs: A100, RTX3090
-
-Create conda environment:
-
-```bash
-  conda create -n champ python=3.10
-  conda activate champ
-```
-
-Install packages with `pip`
-
-```bash
-  pip install -r requirements.txt
-```
-
-Install packages with [poetry](https://python-poetry.org/)
-> If you want to run this project on a Windows device, we strongly recommend to use `poetry`.
-```shell
-poetry install --no-root
-```
 
 # Inference
 
-The inference entrypoint script is `${PROJECT_ROOT}/inference.py`. Before testing your cases, there are two preparations need to be completed:
-1. [Download all required pretrained models](#download-pretrained-models).
-2. [Prepare your guidance motions](#preparen-your-guidance-motions).
-2. [Run inference](#run-inference).
+## 1. Weight Preparation
 
-## Download pretrained models
+Download pretrained weights from <https://huggingface.co/zjh21/UNICA> and place them in the `weights` path. The expected structure is:
 
-You can easily get all pretrained models required by inference from our [HuggingFace repo](https://huggingface.co/fudan-generative-ai/champ).
+```
+weights/                              # at the root path
+├── berserker/   
+│   ├── diffusion                     # model(_1).safetensors or pytorch_model(_1).bin
+│   ├── pca                           # pca_200.ckpt and pca_mask.npy
+│   ├── vae.pt
+├── cowgirl/   
+│   ├── diffusion                     # model(_1).safetensors or pytorch_model(_1).bin
+│   ├── pca                           # pca_200.ckpt and pca_mask.npy
+│   ├── vae.pt
+├── ...
 
-Clone the the pretrained models into `${PROJECT_ROOT}/pretrained_models` directory by cmd below:
-```shell
-git lfs install
-git clone https://huggingface.co/fudan-generative-ai/champ pretrained_models
+Geometry/
+├── configs
+├── inference.py
 ```
 
-Or you can download them separately from their source repo:
-   - [Champ ckpts](https://huggingface.co/fudan-generative-ai/champ/tree/main):  Consist of denoising UNet, guidance encoders, Reference UNet, and motion module.
-   - [StableDiffusion V1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5): Initialized and fine-tuned from Stable-Diffusion-v1-2. (*Thanks to runwayml*)
-   - [sd-vae-ft-mse](https://huggingface.co/stabilityai/sd-vae-ft-mse): Weights are intended to be used with the diffusers library. (*Thanks to stablilityai*)
-   - [image_encoder](https://huggingface.co/lambdalabs/sd-image-variations-diffusers/tree/main/image_encoder): Fine-tuned from CompVis/stable-diffusion-v1-4-original to accept CLIP image embedding rather than text embeddings. (*Thanks to lambdalabs*)
+## 2. Run Inference
 
-Finally, these pretrained models should be organized as follows:
-
-```text
-./pretrained_models/
-|-- champ
-|   |-- denoising_unet.pth
-|   |-- guidance_encoder_depth.pth
-|   |-- guidance_encoder_dwpose.pth
-|   |-- guidance_encoder_normal.pth
-|   |-- guidance_encoder_semantic_map.pth
-|   |-- reference_unet.pth
-|   `-- motion_module.pth
-|-- image_encoder
-|   |-- config.json
-|   `-- pytorch_model.bin
-|-- sd-vae-ft-mse
-|   |-- config.json
-|   |-- diffusion_pytorch_model.bin
-|   `-- diffusion_pytorch_model.safetensors
-`-- stable-diffusion-v1-5
-    |-- feature_extractor
-    |   `-- preprocessor_config.json
-    |-- model_index.json
-    |-- unet
-    |   |-- config.json
-    |   `-- diffusion_pytorch_model.bin
-    `-- v1-inference.yaml
-```
-
-## Prepare your guidance motions
-
-Guidance motion data which is produced via SMPL & Rendering is necessary when performing inference.
-
-You can download our pre-rendered samples on our [HuggingFace repo](https://huggingface.co/datasets/fudan-generative-ai/champ_motions_example) and place into `${PROJECT_ROOT}/example_data` directory:
-```shell
-git lfs install
-git clone https://huggingface.co/datasets/fudan-generative-ai/champ_motions_example example_data
-```
-
-Or you can follow the [SMPL & Rendering doc](https://github.com/fudan-generative-vision/champ/blob/master/docs/data_process.md) to produce your own motion datas.
-
-Finally, the `${PROJECT_ROOT}/example_data` will be like this:
-```
-./example_data/
-|-- motions/  # Directory includes motions per subfolder
-|   |-- motion-01/  # A motion sample
-|   |   |-- depth/  # Depth frame sequance
-|   |   |-- dwpose/ # Dwpose frame sequance
-|   |   |-- mask/   # Mask frame sequance
-|   |   |-- normal/ # Normal map frame sequance
-|   |   `-- semantic_map/ # Semanic map frame sequance
-|   |-- motion-02/
-|   |   |-- ...
-|   |   `-- ...
-|   `-- motion-N/
-|       |-- ...
-|       `-- ...
-`-- ref_images/ # Reference image samples(Optional)
-    |-- ref-01.png
-    |-- ...
-    `-- ref-N.png
-```
-
-## Run inference
-
-Now we have all prepared models and motions in `${PROJECT_ROOT}/pretrained_models` and `${PROJECT_ROOT}/example_data` separately. 
-
-Here is the command for inference:
+From the repository root:
 
 ```bash
-  python inference.py --config configs/inference/inference.yaml
+cd Geometry
+python inference.py --config configs/inference/cowgirl.yaml
 ```
 
-If using `poetry`, command is 
-```shell
-poetry run python inference.py --config configs/inference/inference.yaml
-```
+The script should be runnable if weights are correctly prepared. Or edit `configs/inference/${caseName}.yaml` to specify your data paths, model checkpoint paths, and the desired motion sequence. 
 
-Animation results will be saved in `${PROJECT_ROOT}/results` folder. You can change the reference image or the guidance motion by modifying `inference.yaml`.
+## 3. Input Data Structure
 
-The default motion-02 in `inference.yaml` has about 250 frames, requires ~20GB VRAM.
-
-**Note**: If your VRAM is insufficient, you can switch to a shorter motion sequence or cut out a segment from a long sequence. We provide a frame range selector in `inference.yaml`, which you can replace with a list of `[min_frame_index, max_frame_index]` to conveniently cut out a segment from the sequence.
-
-# Train the Model
-
-The training process consists of two distinct stages. For more information, refer to the `Training Section` in the [paper on arXiv](https://arxiv.org/abs/2403.14781).
-
-## Prepare Datasets
-
-Prepare your own training videos with human motion (or use [our sample training data on HuggingFace](https://huggingface.co/datasets/fudan-generative-ai/champ_trainning_sample)) and modify `data.video_folder` value in training config yaml.
-
-All training videos need to be processed into SMPL & DWPose format. Refer to the [Data Process doc](https://github.com/fudan-generative-vision/champ/blob/master/docs/data_process.md).
-
-The directory structure will be like this:
-```txt
-/training_data/
-|-- video01/          # A video data frame
-|   |-- depth/        # Depth frame sequance
-|   |-- dwpose/       # Dwpose frame sequance
-|   |-- mask/         # Mask frame sequance
-|   |-- normal/       # Normal map frame sequance
-|   `-- semantic_map/ # Semanic map frame sequance
-|-- video02/
-|   |-- ...
-|   `-- ...
-`-- videoN/
-|-- ...
-`-- ...
-```
-
-Select another small batch of data as the validation set, and modify the `validation.ref_images` and `validation.guidance_folders` roots in training config yaml.
-
-## Run Training Scripts
-
-To train the Champ model, use the following command:
-```shell
-# Run training script of stage1
-accelerate launch train_s1.py --config configs/train/stage1.yaml
-
-# Modify the `stage1_ckpt_dir` value in yaml and run training script of stage2
-accelerate launch train_s2.py --config configs/train/stage2.yaml
-```
-
-# Datasets
-
-| Type | HuggingFace |       ETA       |
-| :----: | :----------------------------------------------------------------------------------------- | :-------------: |
-|   Inference   | **[SMPL motion samples](https://huggingface.co/datasets/fudan-generative-ai/champ_motions_example)** | Thu Apr 18 2024 |
-|   Training | **[Sample datasets for Training](https://huggingface.co/datasets/fudan-generative-ai/champ_trainning_sample)** | Sun May 05 2024 |
-# Roadmap
-
-| Status | Milestone                                                                                  |       ETA       |
-| :----: | :----------------------------------------------------------------------------------------- | :-------------: |
-|   ✅   | **[Inference source code meet everyone on GitHub first time](https://github.com/fudan-generative-vision/champ)** | Sun Mar 24 2024 |
-|   ✅   | **[Model and test data on Huggingface](https://huggingface.co/fudan-generative-ai/champ)** | Tue Mar 26 2024 |
-|   ✅   | **[Optimize dependencies and go well on Windows](https://github.com/fudan-generative-vision/champ?tab=readme-ov-file#installation)** | Sun Mar 31 2024 |
-|   ✅   | **[Data preprocessing code release](https://github.com/fudan-generative-vision/champ/blob/master/docs/data_process.md)**                                                    | Fri Apr 12 2024 |
-|   ✅   | **[Training code release](https://github.com/fudan-generative-vision/champ/pull/99)**                                                  | Thu May 02 2024 |
-|   ✅   | **[Sample of training data release on HuggingFace](https://huggingface.co/datasets/fudan-generative-ai/champ_trainning_sample)**                                                  | Sun May 05 2024 |
-|   ✅  | **[Smoothing SMPL motion](https://github.com/fudan-generative-vision/champ/pull/96)**                                                  | Sun Apr 28 2024 |
-|   🚀🚀🚀  | **[Gradio demo on HuggingFace]()**                                                  | TBD |
-
-# Citation
-
-If you find our work useful for your research, please consider citing the paper:
+The inference script expects a `data_folder` containing one or more subfolders, each holding **4 consecutive position map frames** as `.exr` files:
 
 ```
-@inproceedings{zhu2024champ,
-      title={Champ: Controllable and Consistent Human Image Animation with 3D Parametric Guidance},
-      author={Shenhao Zhu and Junming Leo Chen and Zuozhuo Dai and Yinghui Xu and Xun Cao and Yao Yao and Hao Zhu and Siyu Zhu},
-      booktitle={European Conference on Computer Vision (ECCV)},
-      year={2024}
-}
+<data_folder>/
+├── <sequence_name>/
+│   ├── 1.exr
+│   ├── 2.exr
+│   ├── 3.exr
+│   └── 4.exr
+├── ...
 ```
 
-# Opportunities available
+> **Note:** For the provided example data in `assets/`, the 4 `.exr` files are simply **duplications of the 1st frame**. Only the first 3 frames are used as the initial conditioning window; the 4th frame is not consumed by the auto-regressive pipeline.
 
-Multiple research positions are open at the **Generative Vision Lab, Fudan University**! Include:
+## 4. Output Format
 
-- Research assistant
-- Postdoctoral researcher
-- PhD candidate
-- Master students
+Outputs are saved to the directory specified by `output_dir` in the config, organized by input subfolder name:
 
-Interested individuals are encouraged to contact us at [siyuzhu@fudan.edu.cn](mailto://siyuzhu@fudan.edu.cn) for further information.
+```
+<output_dir>/
+├── <sequence_name>/
+│   ├── 1_Forward.exr
+│   ├── 1_Forward.npy
+│   ├── 1_Forward.ply
+│   ├── 2_Forward.exr
+│   ├── 2_Forward.npy
+│   ├── 2_Forward.ply
+│   ├── ...
+```
+
+Each generated frame produces up to three files (configurable via `save_exr`, `save_npy`, `save_meshes` in the config):
+
+| File | Description |
+|------|-------------|
+| `*.exr` | Raw model output — 6-view position map in [0, 1] range |
+| `*.npy` | Position map with **accumulated positional shifts** applied, for progressive 4D inference |
+| `*.ply` | Triangle mesh created by connecting neighboring foreground pixels — useful for a **quick visual check** of geometry quality without the Appearance stage |
+
+<br><br>
+
+
+# Training
+
+🚧 We are still in the process of cleaning up the training code. In the meantime, we are preparing a data acquisition guide to help you prepare the training data. Below is an example of how to run the training once the data is ready.
+
+## 1. Pretrained Weight Preparation
+
+Download the Stable Diffusion v1.5 UNet and VAE weights from [HuggingFace](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/tree/main/unet) and organize them as follows:
+
+```
+pretrained_models/
+├── stable-diffusion-v1-5/
+│   ├── unet/
+│   │   ├── config.json
+│   │   └── diffusion_pytorch_model.bin
+│   └── vae/
+│       ├── config.json
+│       └── diffusion_pytorch_model.bin
+```
+
+## 2. Training Data Structure
+
+The training data folder should contain subfolders of **4-frame position map groups**, each labeled with an action type:
+
+```
+<data_folder>/
+├── {transitionSequence}_{frameNumber:05d}_{action}/
+│   ├── 1.exr
+│   ├── 2.exr
+│   ├── 3.exr
+│   └── 4.exr
+├── ...
+```
+
+For example:
+
+```
+posmap/
+├── 0-a_00001_Idle/
+│   ├── 1.exr
+│   ├── 2.exr
+│   ├── 3.exr
+│   └── 4.exr
+├── 0-a_00002_Idle/
+│   ├── 1.exr
+│   ├── 2.exr
+│   ├── 3.exr
+│   └── 4.exr
+├── ...
+├── w-d-rfoot_00157_Backward/
+│   ├── 1.exr
+│   ├── 2.exr
+│   ├── 3.exr
+│   └── 4.exr
+├── ...
+```
+
+## 3. Launch Training
+
+**Step 1: VAE Fine-tuning**
+
+From `Geometry/`:
+
+```bash
+accelerate launch train_vae.py --config configs/train_vae.yaml
+```
+
+Edit `configs/train_vae.yaml` to set your `data_dir`, `pretrained_vae_path`, and output directories.
+
+**Step 2: Diffusion Model Training**
+
+```bash
+accelerate launch train_diffusion.py --config configs/train_diffusion.yaml
+```
+
+Edit `configs/train_diffusion.yaml` to set your data folder, pretrained model paths, and the path to the fine-tuned VAE checkpoint from Step 1 (`vae_finetune_path`).
+
+> **Note:** Two-stage diffusion training is already packed in the script. The stage boundary is controlled by `stage1_steps` and `stage2_steps` in the config.

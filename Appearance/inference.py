@@ -5,14 +5,21 @@ PTv3 Gaussian Refiner — Inference Script
 Processes EXR position maps through the trained PTv3 refiner and outputs
 PLY files containing refined 3D Gaussians.
 
+With ``--progressive``, the script additionally denormalizes the refined
+Gaussians into world-space positions using Procrustes analysis on paired
+NPY position maps (requires ``save_npy=true`` during geometry inference).
+
 Usage::
 
     python inference.py --config configs/inference.yaml
+    python inference.py --config configs/inference.yaml --progressive
     python inference.py --config configs/inference.yaml single_file.input=path/to/file.exr
 """
 
 import os
 import time
+import warnings
+from glob import glob
 
 import torch
 import numpy as np
@@ -30,6 +37,7 @@ from utils.posmap_utils import (
     extract_gaussians,
     save_ply,
 )
+from utils.progressive import run_progressive
 
 
 class PTv3Inference:
@@ -255,11 +263,27 @@ def main():
     parser = ArgumentParser(description="PTv3 Inference — EXR → PLY")
     parser.add_argument("--config", type=str, default="configs/inference.yaml",
                         help="Path to the YAML config file")
+    parser.add_argument("--progressive", action="store_true",
+                        help="Enable progressive 4D inference "
+                             "(put 3DGS to world coordinates for actual avatar movement)")
     args, overrides = parser.parse_known_args()
 
     cfg = OmegaConf.load(args.config)
     if overrides:
         cfg = OmegaConf.merge(cfg, OmegaConf.from_dotlist(overrides))
+
+    # Resolve relative paths against the project root so the script works
+    # regardless of the working directory (e.g. running from Appearance/).
+    _project_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+    _project_root = os.path.normpath(_project_root)
+    for _key in ['input_dir', 'output_dir', 'attribute_map_path', 'checkpoint']:
+        _val = OmegaConf.select(cfg, f"paths.{_key}")
+        if _val is not None and not os.path.isabs(_val):
+            OmegaConf.update(cfg, f"paths.{_key}", os.path.join(_project_root, _val))
+    for _key in ['input', 'output']:
+        _val = OmegaConf.select(cfg, f"single_file.{_key}")
+        if _val is not None and not os.path.isabs(_val):
+            OmegaConf.update(cfg, f"single_file.{_key}", os.path.join(_project_root, _val))
 
     if cfg.single_file.input is not None and cfg.single_file.output is None:
         base = os.path.splitext(os.path.basename(cfg.single_file.input))[0]
@@ -287,6 +311,31 @@ def main():
             save_input=cfg.processing.save_input,
             verbose=not cfg.processing.quiet,
         )
+
+    # ------------------------------------------------------------------
+    # Progressive 4D: denormalize refined PLYs into world space
+    # ------------------------------------------------------------------
+    if args.progressive:
+        input_dir = cfg.paths.input_dir
+        output_dir = cfg.paths.output_dir
+        verbose = not cfg.processing.quiet
+
+        # Check whether NPY position maps exist in the input directory
+        npy_files = glob(os.path.join(input_dir, "**", "*.npy"), recursive=True)
+        if not npy_files:
+            warnings.warn(
+                "Progressive 4D inference is not available due to missing "
+                "npy files. Please re-run Geometry/inference.py with "
+                "save_npy=true."
+            )
+        else:
+            run_progressive(
+                ply_dir=output_dir,
+                npy_dir=input_dir,
+                attr_mask=engine.attr_mask,
+                target_resolution=cfg.processing.target_resolution,
+                verbose=verbose,
+            )
 
 
 if __name__ == "__main__":

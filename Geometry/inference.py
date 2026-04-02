@@ -65,35 +65,29 @@ def expand_motion_sequence(motion_seq_config):
 
 # ==================== PCA Reconstruction ====================
 
-def transform_pca(pca, pose_conds, sigma_pca=2.0):
-    """Transform foreground pixels through PCA, clip, and reconstruct.
+def transform_pca(pca, pose_conds):
+    """Transform foreground pixels through PCA and reconstruct.
 
     Args:
         pca: Fitted PCA model.
         pose_conds: Foreground pixels array of shape (M, 3).
-        sigma_pca: Number of standard deviations to clip.
 
     Returns:
         Reconstructed foreground pixels of shape (M, 3).
     """
     pose_conds = pose_conds.reshape(1, -1)
     lowdim = pca.transform(pose_conds)
-
-    std = np.sqrt(pca.explained_variance_)
-    lowdim = np.clip(lowdim, -sigma_pca * std, sigma_pca * std)
-
     reconstructed = pca.inverse_transform(lowdim)
     return reconstructed.reshape(-1, 3)
 
 
-def apply_pca_reconstruction_to_tensor(tensor, pca, pca_mask, sigma_pca=2.0):
+def apply_pca_reconstruction_to_tensor(tensor, pca, pca_mask):
     """Apply PCA-based reconstruction to a position map tensor.
 
     Args:
         tensor: Position map tensor of shape (3, H, W) in range [-1, 1].
         pca: Fitted PCA model.
         pca_mask: Boolean mask of shape (H, W) indicating foreground pixels.
-        sigma_pca: Number of standard deviations to clip.
 
     Returns:
         Reconstructed position map tensor of shape (3, H, W) in range [-1, 1].
@@ -102,7 +96,7 @@ def apply_pca_reconstruction_to_tensor(tensor, pca, pca_mask, sigma_pca=2.0):
     pos_map = tensor_01.cpu().numpy().transpose(1, 2, 0)  # (H, W, 3)
 
     pose_conds = pos_map[pca_mask]
-    new_pose_conds = transform_pca(pca, pose_conds, sigma_pca)
+    new_pose_conds = transform_pca(pca, pose_conds)
     pos_map[pca_mask] = new_pose_conds.astype(pos_map.dtype)
 
     reconstructed = torch.from_numpy(pos_map.transpose(2, 0, 1)).to(tensor.device, dtype=tensor.dtype)
@@ -364,7 +358,7 @@ def test_autoregressive(cfg):
         with open(vae_config_path) as f:
             vae_config = json.load(f)
         vae = AutoencoderKL.from_config(vae_config)
-        logger.info("Initialized VAE from config (no pretrained weights)")
+        logger.info("Initialized VAE from config")
     else:
         vae = AutoencoderKL.from_pretrained(cfg['vae_model_path'])
     vae.requires_grad_(False)
@@ -449,7 +443,6 @@ def test_autoregressive(cfg):
     # ==================== PCA (optional) ====================
     use_pca = cfg.get('use_pca_reconstruction', False)
     pca_model, pca_mask = None, None
-    sigma_pca = cfg.get('sigma_pca', 2.0)
 
     if use_pca:
         pca_path = cfg.get('pca_path')
@@ -463,7 +456,7 @@ def test_autoregressive(cfg):
 
         pca_model = joblib.load(pca_path)
         pca_mask = np.load(pca_mask_path)
-        logger.info(f"PCA reconstruction enabled (sigma_pca={sigma_pca}, mask pixels={pca_mask.sum()})")
+        logger.info(f"PCA reconstruction enabled (mask pixels={pca_mask.sum()})")
     else:
         logger.info("PCA reconstruction disabled")
 
@@ -488,7 +481,7 @@ def test_autoregressive(cfg):
     logger.info("Loading dataset...")
     test_dataset = GeoActionDataset(
         root_folder=cfg['data_folder'],
-        image_size=cfg.get('image_size', 512),
+        image_size=cfg.get('image_size', 128),
     )
 
     max_samples = cfg.get('max_test_samples', 20)
@@ -627,7 +620,7 @@ def test_autoregressive(cfg):
             if use_pca and pca_model is not None and pca_mask is not None:
                 logger.info("  Applying PCA reconstruction as post-processing...")
                 for fd in all_frames_data:
-                    pca_frame = apply_pca_reconstruction_to_tensor(fd['frame'], pca_model, pca_mask, sigma_pca)
+                    pca_frame = apply_pca_reconstruction_to_tensor(fd['frame'], pca_model, pca_mask)
                     fd['frame'] = pca_frame * mask.float() + (-1.0) * (~mask).float()
 
             for fd in all_frames_data:
@@ -670,7 +663,6 @@ def test_autoregressive(cfg):
             'keypoint_y_coordinate': y_coordinate,
             'keypoint_x_ranges': x_ranges,
             'use_pca_reconstruction': use_pca,
-            'sigma_pca': sigma_pca if use_pca else None,
         },
         'num_samples': len(test_dataloader),
         'total_frames': total_frames,
@@ -694,4 +686,17 @@ def test_autoregressive(cfg):
 if __name__ == "__main__":
     args = parse_args()
     config = load_config(args.config)
+
+    # Resolve relative paths in config against the project root so the script
+    # works regardless of the working directory (e.g. running from Geometry/).
+    _project_root = Path(__file__).resolve().parent.parent
+    for _key in [
+        'data_folder', 'vae_model_path', 'vae_finetune_path',
+        'pretrained_model_path', 'checkpoint_path',
+        'pca_path', 'pca_mask_path', 'output_dir',
+    ]:
+        _val = config.get(_key)
+        if _val is not None and not os.path.isabs(_val):
+            config[_key] = str(_project_root / _val)
+
     test_autoregressive(config)

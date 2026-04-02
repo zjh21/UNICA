@@ -3,10 +3,10 @@
 # ============================================================================
 
 data:
-  posmap_root: "/media/test/sdb1/zjh_workspace/ADNAS/Dataset/survival/posmap_3dgs"
-  attribute_map_path: "/media/test/sdb1/zjh_workspace/ADNAS/Dataset/survival/base_attrmap.npy"
-  renders_root: "/media/test/sdc1/zjh_workspace/ADNAS/Dataset/survival/renders"
-  output_dir: "/media/test/sdc1/zjh_workspace/ADNAS/weights/survival/FAT_3dgs"
+  posmap_root: Dataset/survival/posmap_3dgs
+  attribute_map_path: weights/survival/base_attrmap.npy
+  renders_root: Dataset/survival/renders
+  output_dir: weights/survival/
 
 training:
   epochs: 100

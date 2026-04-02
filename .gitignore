@@ -1,1 +1,18 @@
-dataset_toolkits/utils/__pycache__
+# Results and weights
+results/
+weights/
+
+# Pretrained models
+Geometry/pretrained_models/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+*.so
+
+# Windows
+*:Zone.Identifier

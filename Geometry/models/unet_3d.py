@@ -586,10 +586,7 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         pretrained_model_path = Path(pretrained_model_path)
         if subfolder is not None:
             pretrained_model_path = pretrained_model_path.joinpath(subfolder)
-        logger.info(
-            f"loaded temporal unet's pretrained weights from {pretrained_model_path} ..."
-        )
-
+            
         config_file = pretrained_model_path / "config.json"
         if not (config_file.exists() and config_file.is_file()):
             raise RuntimeError(f"{config_file} does not exist or is not a file")
@@ -621,11 +618,9 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         model = cls.from_config(unet_config, **unet_additional_kwargs)
 
         if not load_pretrained_weights:
-            logger.info("Skipping pretrained weight loading (load_pretrained_weights=False)")
             params = [
                 p.numel() if "temporal" in n else 0 for n, p in model.named_parameters()
             ]
-            logger.info(f"Initialized {sum(params) / 1e6}M-parameter motion module (random init)")
             return model
 
         # load the vanilla weights

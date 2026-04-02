@@ -1,0 +1,51 @@
+# Inference Configuration
+
+# Data
+caseName: survival
+data_folder: assets/${caseName}
+image_size: 128
+num_workers: 4
+
+# Motion Sequence (compact format: each entry is expanded to count repetitions)
+motion_sequence:
+  - action: Forward
+    count: 60
+  - action: Backward
+    count: 60
+  - action: Left
+    count: 60
+  - action: Idle
+    count: 20
+
+# Model Paths
+vae_model_path: weights/base/vae
+vae_finetune_path: weights/${caseName}/vae.pt
+pretrained_model_path: weights/base
+checkpoint_path: weights/${caseName}/diffusion
+
+# Renormalization
+use_renormalization: true
+keypoint_y_coordinate: 50
+
+# PCA Reconstruction (post-processing only, does not affect auto-regressive pipeline)
+use_pca_reconstruction: true
+pca_path: weights/${caseName}/pca/pca_200.ckpt
+pca_mask_path: weights/${caseName}/pca/pca_mask.npy
+
+# Output
+output_dir: results/${caseName}
+
+# DDIM Sampling
+pure_noise_timestep: 999
+pure_noise_steps: 10
+cfg_scale: 1.0
+
+# Precision
+mixed_precision: "no"
+enable_xformers_memory_efficient_attention: true
+
+# Output Formats
+save_meshes: true
+save_exr: true
+save_npy: true
+threshold_factor: 0.05
