@@ -1,7 +1,7 @@
 # UNICA: A Unified Neural Framework for Controllable 3D Avatars
 
 <!-- TODO: Add project page, arxiv, and other badge links below -->
-[Paper](<!-- TODO: arxiv URL -->) | [Models](<https://huggingface.co/zjh21/UNICA>)
+[Paper](<https://arxiv.org/abs/2604.02799>) | [Models](<https://huggingface.co/zjh21/UNICA>)
 
 ![Teaser image](<assets/teaser.png>)
 
